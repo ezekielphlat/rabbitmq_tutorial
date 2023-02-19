@@ -1,9 +1,9 @@
 const amqplib = require("amqplib");
 
 //create a queue name
-const queueName = "hello";
+const queueName = "task";
 // create a message
-const msg = "hello world from another one";
+const msg = process.argv.slice(2).join(" ") || "Hello World";
 
 const sendMsg = async () => {
   const connection = await amqplib.connect("amqp://localhost");
@@ -11,8 +11,8 @@ const sendMsg = async () => {
   const channel = await connection.createChannel();
   // by default the exchange is the direct exchange
   // create a queue and not recreate after restart
-  await channel.assertQueue(queueName, { durable: false });
-  channel.sendToQueue(queueName, Buffer.from(msg));
+  await channel.assertQueue(queueName, { durable: true });
+  channel.sendToQueue(queueName, Buffer.from(msg), { persistent: true });
   console.log("sent: ", msg);
   setTimeout(() => {
     connection.close();
